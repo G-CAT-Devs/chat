@@ -571,8 +571,7 @@ async def get_oauth_client_info_with_dynamic_client_registration(
     oauth_scope: str | None = None,
 ) -> OAuthClientInformationFull:
     try:
-        webui_url = await Config.get('webui.url')
-        redirect_base_url = (str(webui_url or request.base_url)).rstrip('/')
+        redirect_base_url = str(request.base_url).rstrip('/')
 
         oauth_client_metadata = OAuthClientMetadata(
             # LICENSE covers this Open WebUI OAuth client identifier.
@@ -690,8 +689,7 @@ async def get_oauth_client_info_with_static_credentials(
     but skips dynamic client registration entirely.
     """
     try:
-        webui_url = await Config.get('webui.url')
-        redirect_base_url = (str(webui_url or request.base_url)).rstrip('/')
+        redirect_base_url = str(request.base_url).rstrip('/')
         redirect_uri = f'{redirect_base_url}/oauth/clients/{client_id}/callback'
 
         # Discover server metadata (authorization endpoint, token endpoint, scopes, etc.)
@@ -1371,8 +1369,9 @@ class OAuthClientManager:
             if state and client is not None:
                 await client.framework.clear_state_data(request.session, state)
 
-        webui_url = await Config.get('webui.url')
-        redirect_url = (str(webui_url or request.base_url)).rstrip('/')
+        # The same deployment serves multiple public hostnames. Prefer the validated
+        # request origin so each login returns to the hostname the user started on.
+        redirect_url = str(request.base_url).rstrip('/')
 
         if error_message:
             log.debug(error_message)
@@ -2252,8 +2251,9 @@ class OAuthManager:
                 else ERROR_MESSAGES.DEFAULT('Error during OAuth process')
             )
 
-        webui_url = await Config.get('webui.url')
-        redirect_base_url = (str(webui_url or request.base_url)).rstrip('/')
+        # This app is exposed on multiple hostnames; preserve the origin that
+        # initiated the OAuth flow rather than redirecting to a static WEBUI_URL.
+        redirect_base_url = str(request.base_url).rstrip('/')
         redirect_url = f'{redirect_base_url}/auth'
 
         if error_message:

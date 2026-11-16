@@ -1,9 +1,9 @@
-# Independent chat1 deployment; does not share chat.gcat.ir's database or volumes.
+# Production Open WebUI fork, served only at chat.gcat.ir.
 name: chat-gcat
 services:
   webui:
     image: ${CHAT_IMAGE:?Set CHAT_IMAGE to the built fork image}
-    container_name: chat1-webui
+    container_name: chat-webui
     restart: unless-stopped
     ports:
       - "127.0.0.1:8089:8080"

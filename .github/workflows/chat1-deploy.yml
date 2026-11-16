@@ -111,4 +111,4 @@ jobs:
           scp -i "$HOME/.ssh/chat1_deploy_key" -P "$VPS_PORT" -o StrictHostKeyChecking=yes deploy/deploy.sh "$VPS_USER@$VPS_HOST:/opt/chat-gcat/deploy/deploy.sh"
           printf '%s' "$GHCR_TOKEN" | ssh "${ssh_opts[@]}" "$VPS_USER@$VPS_HOST" "docker login ghcr.io -u '$GHCR_USER' --password-stdin >/dev/null"
           ssh "${ssh_opts[@]}" "$VPS_USER@$VPS_HOST" "CHAT_IMAGE=ghcr.io/g-cat-devs/chat-gcat@${IMAGE_DIGEST} bash /opt/chat-gcat/deploy/deploy.sh"
-          ssh "${ssh_opts[@]}" "$VPS_USER@$VPS_HOST" 'curl --fail --silent --show-error --max-time 10 -H "Host: chat1.gcat.ir" https://127.0.0.1/health -k >/dev/null && curl --fail --silent --show-error --max-time 10 -H "Host: chat.1.g-cat.ir" https://127.0.0.1/health -k >/dev/null'
+          ssh "${ssh_opts[@]}" "$VPS_USER@$VPS_HOST" 'curl --fail --silent --show-error --max-time 10 -H "Host: chat.gcat.ir" https://127.0.0.1/health -k >/dev/null && curl --fail --silent --show-error --max-time 10 -H "Host: chat.g-cat.ir" https://127.0.0.1/health -k >/dev/null'
