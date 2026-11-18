@@ -1,7 +1,4 @@
-import {
-	GCAT_PAYMENTS_CATALOG_URL,
-	GCAT_PAYMENTS_STATUS_URL
-} from '$lib/constants';
+import { GCAT_PAYMENTS_CATALOG_URL, GCAT_PAYMENTS_STATUS_URL } from '$lib/constants';
 
 export type SubscriptionPlan = {
 	id: string;

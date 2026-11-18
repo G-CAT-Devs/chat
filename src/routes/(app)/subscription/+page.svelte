@@ -84,8 +84,7 @@
 	};
 
 	const checkoutUrlFor = (plan: SubscriptionPlan) => {
-		const base =
-			catalog?.checkoutBaseUrl?.replace(/\/$/, '') || `${GCAT_PORTAL_ORIGIN}/portal/pay`;
+		const base = catalog?.checkoutBaseUrl?.replace(/\/$/, '') || `${GCAT_PORTAL_ORIGIN}/portal/pay`;
 		const returnUrl = `${window.location.origin}/subscription`;
 		const url = new URL(base);
 		url.searchParams.set('plan', plan.id);
@@ -313,9 +312,7 @@
 			</div>
 		{:else if catalog}
 			{#if !catalog.paymentConfigured}
-				<div
-					class="mb-6 rounded-2xl border border-amber-500/30 bg-amber-500/5 px-4 py-4 text-sm"
-				>
+				<div class="mb-6 rounded-2xl border border-amber-500/30 bg-amber-500/5 px-4 py-4 text-sm">
 					<p class="font-medium">
 						پرداخت آنلاین موقتاً در دسترس نیست / Online checkout unavailable
 					</p>
@@ -362,9 +359,7 @@
 								<div class="shrink-0 text-left sm:text-right">
 									<div class="text-lg md:text-xl font-medium tabular-nums">
 										{formatTomans(plan.priceTomans)}
-										<span class="text-sm font-normal text-gray-500 dark:text-gray-400"
-											>تومان</span
-										>
+										<span class="text-sm font-normal text-gray-500 dark:text-gray-400">تومان</span>
 									</div>
 									<div class="text-[0.6875rem] text-gray-400 dark:text-gray-500">Tomans</div>
 								</div>
