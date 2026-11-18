@@ -130,6 +130,12 @@ export const DEFAULT_CAPABILITIES = {
 
 export const PASTED_TEXT_CHARACTER_LIMIT = 1000;
 
+// GCAT portal payment bridge (ai.gcat.ir) — catalog + PackPay checkout for chat.gcat.ir
+export const GCAT_PORTAL_ORIGIN = 'https://ai.gcat.ir';
+export const GCAT_PAYMENTS_CATALOG_URL = `${GCAT_PORTAL_ORIGIN}/api/payments/catalog`;
+export const GCAT_PAYMENTS_STATUS_URL = `${GCAT_PORTAL_ORIGIN}/api/payments/status`;
+export const GCAT_SUPPORT_URL = 'https://t.me/gcat_org';
+
 // Source: https://kit.svelte.dev/docs/modules#$env-static-public
 // This feature, akin to $env/static/private, exclusively incorporates environment variables
 // that are prefixed with config.kit.env.publicPrefix (usually set to PUBLIC_).

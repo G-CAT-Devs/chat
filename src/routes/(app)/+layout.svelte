@@ -466,7 +466,14 @@
 			class=" text-gray-700 dark:text-gray-100 bg-white dark:bg-gray-900 h-screen max-h-[100dvh] overflow-auto flex flex-row justify-end"
 		>
 			{#if !['user', 'admin'].includes($user?.role)}
-				<AccountPending />
+				{#if $page.url.pathname.startsWith('/subscription')}
+					<main class="contents">
+						<div id="main-content" tabindex="-1" class="sr-only left-0 top-0"></div>
+						<slot />
+					</main>
+				{:else}
+					<AccountPending />
+				{/if}
 			{:else}
 				<Sidebar />
 

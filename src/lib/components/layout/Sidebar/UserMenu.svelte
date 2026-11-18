@@ -30,6 +30,7 @@
 	import PinSlashIcon from './icons/PinSlash.svelte';
 	import Settings from '$lib/components/icons/Settings.svelte';
 	import KeyIcon from './icons/Key.svelte';
+	import SparklesIcon from './icons/Sparkles.svelte';
 	import UserIcon from './icons/User.svelte';
 	import WorkspaceIcon from './icons/Workspace.svelte';
 	import XMarkIcon from './icons/XMark.svelte';
@@ -569,6 +570,30 @@
 					<div class=" self-center truncate">{$i18n.t('Admin Panel')}</div>
 				</a>
 			{/if}
+
+			<a
+				role="menuitem"
+				href="/subscription"
+				draggable="false"
+				class="flex h-[1.6875rem] items-center gap-2 rounded-xl px-2 text-[0.8125rem] w-full hover:bg-gray-50/60 dark:hover:bg-gray-800/60 transition cursor-pointer select-none"
+				on:click={async (e) => {
+					if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) {
+						return;
+					}
+					e.preventDefault();
+					show = false;
+					goto('/subscription');
+					if ($mobile) {
+						await tick();
+						showSidebar.set(false);
+					}
+				}}
+			>
+				<div class="self-center">
+					<SparklesIcon className="size-3.5" strokeWidth="1.5" />
+				</div>
+				<div class=" self-center truncate">{$i18n.t('Subscription')}</div>
+			</a>
 
 			<button
 				role="menuitem"
