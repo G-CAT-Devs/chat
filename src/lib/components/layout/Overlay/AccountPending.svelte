@@ -57,7 +57,14 @@
 					</div>
 				{/if}
 
-				<div class=" mt-6 mx-auto relative group w-fit">
+				<div class=" mt-6 mx-auto relative group w-fit flex flex-col items-center gap-2">
+					<a
+						href="/subscription"
+						class="relative z-20 flex px-5 py-2 rounded-full bg-gray-900 text-white dark:bg-white dark:text-gray-900 hover:opacity-90 transition font-normal text-sm"
+					>
+						مشاهده پلن‌های اشتراک / View subscription plans
+					</a>
+
 					<button
 						class="relative z-20 flex px-5 py-2 rounded-full bg-white border border-gray-100 dark:border-none hover:bg-gray-100 text-gray-700 transition font-normal text-sm"
 						on:click={async () => {
@@ -68,7 +75,7 @@
 					</button>
 
 					<button
-						class="text-xs text-center w-full mt-2 text-gray-400 underline"
+						class="text-xs text-center w-full mt-1 text-gray-400 underline"
 						on:click={async () => {
 							const res = await userSignOut().catch((err) => {
 								console.error(err);
