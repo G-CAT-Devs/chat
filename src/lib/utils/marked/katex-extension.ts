@@ -120,17 +120,6 @@ function katexStart(src, displayMode: boolean) {
 			if (displayMode && src.charAt(i + 1) !== '$') {
 				continue;
 			}
-			// Avoid treating currency with digits (e.g. $5, 5$, $۱۰, ۱۰$) as math start
-			if (!displayMode) {
-				// Check if followed by digits
-				if (i + 1 < src.length && /\d|[\u0660-\u0669\u06f0-\u06f9]/.test(src.charAt(i + 1))) {
-					continue;
-				}
-				// Check if preceded by digits (e.g. 5$, ۱۰$)
-				if (i > 0 && /\d|[\u0660-\u0669\u06f0-\u06f9]/.test(src.charAt(i - 1))) {
-					continue;
-				}
-			}
 			if (i === 0 || ALLOWED_SURROUNDING_CHARS_REGEX.test(src.charAt(i - 1))) {
 				return i;
 			}

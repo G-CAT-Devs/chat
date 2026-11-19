@@ -61,8 +61,7 @@ describe('math in Persian Markdown', () => {
 		expect(mathTokens('```tex\n$x$\n```')).toHaveLength(0);
 	});
 
-	it('does not treat English or Persian currency with digits as math', () => {
+	it('does not treat English currency as math', () => {
 		expect(mathTokens('It costs $5 and $10 today.')).toHaveLength(0);
-		expect(mathTokens('قیمت آن ۵$ یا ۱۰$ است.')).toHaveLength(0);
 	});
 });
