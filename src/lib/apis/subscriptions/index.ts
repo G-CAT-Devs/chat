@@ -33,6 +33,22 @@ export type ActiveSubscriptionStatus = {
 	daysRemaining: number;
 };
 
+export type PaymentHistoryItem = {
+	id: string;
+	orderId: string;
+	amountTomans: number;
+	planName: string;
+	method: string;
+	status: 'paid' | 'failed' | 'pending' | 'review' | 'cancelled';
+	invoiceNumber?: string | null;
+	createdAt: string;
+};
+
+export type PaymentHistoryResponse = {
+	items: PaymentHistoryItem[];
+	total: number;
+};
+
 export type PaymentsStatus = {
 	paymentConfigured: boolean;
 	syncChatTiers: boolean;
@@ -90,4 +106,28 @@ export const getPaymentsStatus = async (orderId?: string | null): Promise<Paymen
 	}
 
 	return res.json();
+};
+
+/** Owner-scoped payment history from panel. */
+export const getPaymentHistory = async (): Promise<PaymentHistoryResponse> => {
+	const url = new URL('/api/payments/history', GCAT_PAYMENTS_STATUS_URL);
+	const res = await fetch(url.toString(), {
+		method: 'GET',
+		headers: jsonHeaders,
+		credentials: 'include'
+	});
+
+	if (!res.ok) {
+		throw new Error(await parseError(res));
+	}
+
+	return res.json();
+};
+
+export const getInvoiceUrl = (invoiceNumber: string): string => {
+	const url = new URL(
+		`/api/payments/invoices/${encodeURIComponent(invoiceNumber)}`,
+		GCAT_PAYMENTS_STATUS_URL
+	);
+	return url.toString();
 };

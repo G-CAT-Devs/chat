@@ -2,7 +2,10 @@
 	import { getContext, tick, onMount, type Snippet } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import { getPaymentsStatus, type PaymentsStatus } from '$lib/apis/subscriptions';
+	import { checkQuotaStatus, type QuotaStatus } from '$lib/utils/quota';
+	import { showSettings } from '$lib/stores';
 	import { goto } from '$app/navigation';
+
 
 	import {
 		WEBUI_NAME,
@@ -76,8 +79,14 @@
 	let closedBannerIds = [];
 	let subscriptionStatus: PaymentsStatus['subscription'] | null = null;
 	let expiryBannerDismissed = false;
+	let quotaStatus: QuotaStatus | null = null;
+	let quotaBannerDismissed = false;
 
 	onMount(async () => {
+		const token = localStorage.getItem('token');
+		if (token) {
+			quotaStatus = await checkQuotaStatus(token);
+		}
 		try {
 			const res = await getPaymentsStatus();
 			if (res?.subscription) {
@@ -87,6 +96,7 @@
 			// Ignore if not logged in or endpoint down
 		}
 	});
+
 
 	const getDismissedBannerIds = (): string[] => {
 		try {
@@ -439,7 +449,7 @@
 	{/if}
 
 	<div class="absolute top-full left-0 right-0 h-fit">
-		{#if (!history.currentId && !$chatId && ($banners.length > 0 || ($config?.license_metadata?.type ?? null) === 'trial' || (($config?.license_metadata?.seats ?? null) !== null && $config?.user_count > $config?.license_metadata?.seats))) || (subscriptionStatus && subscriptionStatus.daysRemaining <= 7 && !expiryBannerDismissed)}
+		{#if (!history.currentId && !$chatId && ($banners.length > 0 || ($config?.license_metadata?.type ?? null) === 'trial' || (($config?.license_metadata?.seats ?? null) !== null && $config?.user_count > $config?.license_metadata?.seats))) || (quotaStatus?.isHighUsage && !quotaBannerDismissed) || (subscriptionStatus && subscriptionStatus.daysRemaining <= 7 && !expiryBannerDismissed)}
 			<div class=" w-full z-30">
 				<div
 					class=" flex flex-col gap-1 w-full max-h-28 overflow-y-auto overscroll-contain md:max-h-none md:overflow-visible"
@@ -489,6 +499,39 @@
 							</div>
 						</div>
 					{/if}
+
+					{#if quotaStatus?.isHighUsage && !quotaBannerDismissed}
+						<div
+							class="mx-2 px-3 py-2 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-900 dark:text-amber-200 flex items-center justify-between gap-2 text-xs backdrop-blur-xl"
+						>
+							<div class="flex items-center gap-2">
+								<span class="font-medium">
+									{$i18n.t('Warning: You have used {{percent}}% of your {{period}} quota.', {
+										percent: quotaStatus.highestPercent,
+										period: quotaStatus.period ? $i18n.t(quotaStatus.period) : $i18n.t('plan')
+									})}
+								</span>
+							</div>
+							<div class="flex items-center gap-2">
+								<button
+									type="button"
+									class="px-2 py-1 rounded bg-amber-500 text-white font-medium hover:bg-amber-600 transition"
+									on:click={() => showSettings.set('plan')}
+								>
+									{$i18n.t('View Usage')}
+								</button>
+								<button
+									type="button"
+									class="text-amber-700 dark:text-amber-300 hover:opacity-75"
+									on:click={() => (quotaBannerDismissed = true)}
+									aria-label={$i18n.t('Dismiss')}
+								>
+									✕
+								</button>
+							</div>
+						</div>
+					{/if}
+
 
 					{#if ($config?.license_metadata?.type ?? null) === 'trial'}
 						<Banner

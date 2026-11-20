@@ -7,14 +7,20 @@
 	import {
 		getPaymentsCatalog,
 		getPaymentsStatus,
+		getPaymentHistory,
+		getInvoiceUrl,
 		type PaymentsCatalog,
 		type PaymentsStatus,
-		type SubscriptionPlan
+		type SubscriptionPlan,
+		type PaymentHistoryItem
 	} from '$lib/apis/subscriptions';
+
 	import { getSessionUser } from '$lib/apis/auths';
 	import { GCAT_PORTAL_ORIGIN, GCAT_SUPPORT_URL } from '$lib/constants';
 	import { showSidebar, user } from '$lib/stores';
+	import { copyToClipboard } from '$lib/utils';
 	import Spinner from '$lib/components/common/Spinner.svelte';
+
 	import Badge from '$lib/components/common/Badge.svelte';
 	import SparklesIcon from '$lib/components/layout/Sidebar/icons/Sparkles.svelte';
 
@@ -27,6 +33,13 @@
 	let loadingCatalog = $state(true);
 	let loadingStatus = $state(false);
 	let pollTimer: ReturnType<typeof setInterval> | null = null;
+	let pollCount = 0;
+	const MAX_POLLS = 5;
+
+	let historyItems = $state<PaymentHistoryItem[]>([]);
+	let loadingHistory = $state(false);
+	let historyError = $state<string | null>(null);
+	let copiedOrderId = $state(false);
 
 	const orderId = $derived($page.url.searchParams.get('order'));
 	const supportUrl = $derived(catalog?.supportUrl || GCAT_SUPPORT_URL);
@@ -69,18 +82,44 @@
 
 	const startPolling = (id: string) => {
 		stopPolling();
+		pollCount = 0;
 		pollTimer = setInterval(async () => {
+			pollCount += 1;
 			try {
 				const next = await getPaymentsStatus(id);
 				status = next;
 				statusError = null;
-				if (!shouldKeepPolling(next)) {
+				if (!shouldKeepPolling(next) || pollCount >= MAX_POLLS) {
 					stopPolling();
 				}
 			} catch (err) {
 				statusError = err instanceof Error ? err.message : String(err);
+				if (pollCount >= MAX_POLLS) {
+					stopPolling();
+				}
 			}
 		}, 4000);
+	};
+
+	const refreshStatus = async (id: string) => {
+		loadingStatus = true;
+		statusError = null;
+		try {
+			const next = await getPaymentsStatus(id);
+			status = next;
+		} catch (err) {
+			statusError = err instanceof Error ? err.message : String(err);
+		} finally {
+			loadingStatus = false;
+		}
+	};
+
+	const copyOrderId = async (id: string) => {
+		await copyToClipboard(id);
+		copiedOrderId = true;
+		setTimeout(() => {
+			copiedOrderId = false;
+		}, 2000);
 	};
 
 	const checkoutUrlFor = (plan: SubscriptionPlan) => {
@@ -102,23 +141,26 @@
 
 		if (order.status === 'paid') {
 			if (snapshot.activationProcessed || snapshot.subscription) {
-				return 'پرداخت تأیید شد و اشتراک فعال است. / Payment verified — your subscription is active.';
+				return 'پرداخت موفق و اشتراک با موفقیت فعال شد.';
 			}
-			return 'پرداخت ثبت شد؛ فعال‌سازی در حال انجام است. دوباره پرداخت نکنید. / Payment recorded; activation is still processing. Do not pay again.';
+			return 'پرداخت موفق؛ فعال‌سازی در حال انجام است. لطفاً شکیبا باشید و دوباره پرداخت نکنید.';
+		}
+		if (order.status === 'pending') {
+			return 'در انتظار تأیید بانک؛ اگر مبلغ از حساب شما کسر شده است، وضعیت را با دکمه زیر بررسی کنید.';
 		}
 		if (order.status === 'review') {
-			return 'این پرداخت نیاز به بررسی دستی دارد. دوباره پرداخت نکنید. / This payment needs manual review. Do not pay again.';
+			return 'پرداخت شما در بازبینی است؛ لطفاً با پشتیبانی تماس بگیرید و شناسه سفارش را ارائه دهید.';
 		}
 		if (order.status === 'cancelled') {
-			return 'این سفارش لغو شده است. اگر مبلغی کسر شده، با پشتیبانی تماس بگیرید. / This order was cancelled. If money was deducted, contact support.';
+			return 'این سفارش لغو شده است (فقط محلی). لطفاً تب‌های بانکی قبلی را ببندید. در صورت کسر وجه با پشتیبانی تماس بگیرید.';
 		}
 		if (order.status === 'failed') {
-			return 'شروع پرداخت ناموفق بود. می‌توانید دوباره تلاش کنید. / Checkout failed to start. You can try again.';
+			return 'پرداخت انجام نشد. می‌توانید دوباره برای پرداخت تلاش کنید.';
 		}
 		if (order.status === 'creating') {
-			return 'درگاه در حال آماده‌سازی است… / Checkout is being prepared…';
+			return 'درگاه بانکی در حال آماده‌سازی است…';
 		}
-		return 'در انتظار تأیید پرداخت بانکی… / Waiting for bank payment verification…';
+		return 'در انتظار تأیید پرداخت بانکی…';
 	};
 
 	onMount(() => {
@@ -138,6 +180,21 @@
 				}
 			} finally {
 				if (!cancelled) loadingCatalog = false;
+			}
+		})();
+
+		(async () => {
+			loadingHistory = true;
+			historyError = null;
+			try {
+				const res = await getPaymentHistory();
+				if (!cancelled) historyItems = res.items || [];
+			} catch (err) {
+				if (!cancelled) {
+					historyError = err instanceof Error ? err.message : String(err);
+				}
+			} finally {
+				if (!cancelled) loadingHistory = false;
 			}
 		})();
 
@@ -234,12 +291,73 @@
 							<p class="text-red-600 dark:text-red-400">{statusError}</p>
 						{:else if status?.order}
 							<p class="text-gray-600 dark:text-gray-300">{orderMessage(status)}</p>
-							<p class="mt-2 text-xs text-gray-400 dark:text-gray-500 break-all">
-								سفارش / Order: {status.order.id}
+							<div
+								class="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-gray-400"
+							>
+								<span
+									>شناسه سفارش: <code
+										class="font-mono bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded"
+										>{status.order.id}</code
+									></span
+								>
+								<button
+									type="button"
+									class="px-2 py-0.5 rounded border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+									onclick={() => copyOrderId(status.order.id)}
+								>
+									{copiedOrderId ? 'کپی شد ✓' : 'کپی شناسه'}
+								</button>
 								{#if status.order.planName}
-									· {status.order.planName}
+									<span>· {status.order.planName}</span>
 								{/if}
-							</p>
+							</div>
+
+							{#if status.order.status === 'pending'}
+								<div class="mt-3 flex items-center gap-2">
+									<button
+										type="button"
+										class="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-900 text-white dark:bg-white dark:text-gray-900 hover:opacity-90 transition inline-flex items-center gap-1.5"
+										disabled={loadingStatus}
+										onclick={() => refreshStatus(status.order.id)}
+									>
+										{#if loadingStatus}
+											<Spinner className="size-3" />
+										{/if}
+										<span>بررسی مجدد وضعیت پرداخت</span>
+									</button>
+								</div>
+							{:else if status.order.status === 'failed'}
+								<div class="mt-3">
+									<button
+										type="button"
+										class="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-900 text-white dark:bg-white dark:text-gray-900 hover:opacity-90 transition"
+										onclick={() => {
+											const matchedPlan = catalog?.plans.find(
+												(p) => p.name === status.order?.planName
+											);
+											if (matchedPlan) {
+												payWithBank(matchedPlan);
+											} else {
+												status = null;
+											}
+										}}
+									>
+										تلاش دوباره برای پرداخت
+									</button>
+								</div>
+							{:else if status.order.status === 'review'}
+								<div class="mt-3 text-xs text-amber-700 dark:text-amber-300">
+									<a
+										href={supportUrl}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="underline font-medium"
+									>
+										ارتباط فوری با پشتیبانی جهت بازبینی سفارش
+									</a>
+								</div>
+							{/if}
+
 							{#if status.subscription}
 								<p class="mt-2 text-xs text-emerald-700 dark:text-emerald-300">
 									فعال تا / Active until: {new Date(
@@ -393,6 +511,86 @@
 					{/each}
 				</ul>
 			{/if}
+
+			<!-- Payment History & Invoices -->
+			<section class="mt-12 pt-8 border-t border-gray-100 dark:border-gray-800">
+				<h2 class="text-lg font-medium mb-4">تاریخچه پرداخت و فاکتورها / Payment History</h2>
+
+				{#if loadingHistory}
+					<div class="flex items-center gap-2 text-sm text-gray-500 py-4">
+						<Spinner className="size-4" />
+						<span>در حال بارگذاری سوابق پرداخت…</span>
+					</div>
+				{:else if historyError}
+					<div
+						class="rounded-xl border border-gray-200 dark:border-gray-800 p-4 text-sm text-gray-500"
+					>
+						سوابق پرداخت موقتاً در دسترس نیست.
+					</div>
+				{:else if historyItems.length === 0}
+					<div
+						class="rounded-2xl border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/40 p-6 text-center text-sm text-gray-500"
+					>
+						هنوز هیچ پرداختی برای این حساب ثبت نشده است.
+					</div>
+				{:else}
+					<div class="overflow-x-auto rounded-2xl border border-gray-200 dark:border-gray-800">
+						<table class="w-full text-xs text-right">
+							<thead
+								class="bg-gray-50 dark:bg-gray-850/50 text-gray-500 border-b border-gray-200 dark:border-gray-800"
+							>
+								<tr>
+									<th class="p-3 font-medium">تاریخ</th>
+									<th class="p-3 font-medium">پلن</th>
+									<th class="p-3 font-medium">مبلغ</th>
+									<th class="p-3 font-medium">وضعیت</th>
+									<th class="p-3 font-medium">فاکتور</th>
+								</tr>
+							</thead>
+							<tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+								{#each historyItems as item (item.id)}
+									<tr class="hover:bg-gray-50/50 dark:hover:bg-gray-850/30 transition">
+										<td class="p-3 text-gray-500">
+											{new Date(item.createdAt).toLocaleDateString('fa-IR')}
+										</td>
+										<td class="p-3 font-medium text-gray-800 dark:text-gray-200">
+											{item.planName}
+										</td>
+										<td class="p-3 tabular-nums">
+											{formatTomans(item.amountTomans)} تومان
+										</td>
+										<td class="p-3">
+											{#if item.status === 'paid'}
+												<span class="text-emerald-600 dark:text-emerald-400 font-medium">موفق</span>
+											{:else if item.status === 'pending'}
+												<span class="text-amber-600 dark:text-amber-400">در انتظار</span>
+											{:else if item.status === 'review'}
+												<span class="text-blue-600 dark:text-blue-400">در بازبینی</span>
+											{:else}
+												<span class="text-red-500 dark:text-red-400">ناموفق / لغو</span>
+											{/if}
+										</td>
+										<td class="p-3">
+											{#if item.status === 'paid' && item.invoiceNumber}
+												<a
+													href={getInvoiceUrl(item.invoiceNumber)}
+													target="_blank"
+													rel="noopener noreferrer"
+													class="underline text-blue-600 dark:text-blue-400 hover:opacity-80"
+												>
+													دانلود فاکتور
+												</a>
+											{:else}
+												<span class="text-gray-400">-</span>
+											{/if}
+										</td>
+									</tr>
+								{/each}
+							</tbody>
+						</table>
+					</div>
+				{/if}
+			</section>
 
 			<footer
 				class="mt-10 pt-6 border-t border-gray-100 dark:border-gray-800 text-sm text-gray-500 dark:text-gray-400"
