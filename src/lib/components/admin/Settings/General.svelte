@@ -18,6 +18,7 @@
 	import { toast } from 'svelte-sonner';
 	import Textarea from '$lib/components/common/Textarea.svelte';
 	import Banners from './Interface/Banners.svelte';
+	import BroadcastNotificationCard from './Interface/BroadcastNotificationCard.svelte';
 	import Events from './Events.svelte';
 	import AdminSettingField from './AdminSettingField.svelte';
 	import AdminSettingRow from './AdminSettingRow.svelte';
@@ -448,6 +449,10 @@
 						{$i18n.t('Create announcements shown to users in the app.')}
 					</div>
 					<Banners bind:banners locale={bannerLocale} />
+
+					<div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-850">
+						<BroadcastNotificationCard />
+					</div>
 				</div>
 			</AdminSettingSection>
 		{/if}
