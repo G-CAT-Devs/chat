@@ -24,6 +24,8 @@
 	import Audio from './Settings/Audio.svelte';
 	import DataControls from './Settings/DataControls.svelte';
 	import Usage from './Settings/Usage.svelte';
+	import PlanUsage from './Settings/PlanUsage.svelte';
+
 	import ArchivedChats from './Settings/ArchivedChats.svelte';
 	import Personalization from './Settings/Personalization.svelte';
 	import Search from '../icons/Search.svelte';
@@ -250,6 +252,13 @@
 			searchPrefixes: ['settings.personal.usage.']
 		},
 		{
+			id: 'plan',
+			titleKey: 'settings.personal.plan.title',
+			title: $i18n.t('settings.personal.plan.title'),
+			searchPrefixes: ['settings.personal.plan.']
+		},
+
+		{
 			id: 'archived_chats',
 			titleKey: 'settings.personal.archivedChats.title',
 			title: $i18n.t('settings.personal.archivedChats.title'),
@@ -419,6 +428,10 @@
 
 			if (tab.id === 'usage') {
 				return $visibleControls['settings.usage'];
+			}
+
+			if (tab.id === 'plan') {
+				return $visibleControls['settings.plan'] ?? true;
 			}
 
 			if (tab.id === 'personalization') {
@@ -757,6 +770,19 @@
 								<UsageIcon className="size-3.5" strokeWidth="2" />
 								<span>{$i18n.t('settings.personal.usage.title')}</span>
 							</button>
+						{:else if tabId === 'plan'}
+							<button
+								role="tab"
+								aria-controls="tab-plan"
+								aria-selected={selectedTab === 'plan'}
+								class={tabButtonClass(selectedTab === 'plan')}
+								on:click={() => {
+									selectTab('plan');
+								}}
+							>
+								<UsageIcon className="size-3.5" strokeWidth="2" />
+								<span>{$i18n.t('settings.personal.plan.title')}</span>
+							</button>
 						{:else if tabId === 'archived_chats'}
 							<button
 								role="tab"
@@ -901,6 +927,8 @@
 				<DataControls {saveSettings} />
 			{:else if selectedTab === 'usage'}
 				<Usage />
+			{:else if selectedTab === 'plan'}
+				<PlanUsage />
 			{:else if selectedTab === 'archived_chats'}
 				<ArchivedChats />
 			{:else if selectedTab === 'account'}
