@@ -222,6 +222,50 @@ class BroadcastNotificationForm(BaseModel):
     userId: str | None = None
 
 
+class ScheduledNotificationConfig(BaseModel):
+    enabled: bool = False
+    title: str = 'اعلان سیستم'
+    content: str = ''
+    url: str | None = None
+    startTime: str = '08:00'
+    endTime: str = '12:00'
+    playSound: bool = True
+    durationMs: int = 15000
+
+
+@router.get('/scheduled')
+async def get_scheduled_notification(user=Depends(get_verified_user)):
+    """
+    Get active scheduled login notification for authenticated users.
+    """
+    config = await Config.get('notifications.scheduled_login', {})
+    if not config or not isinstance(config, dict):
+        return {
+            'enabled': False,
+            'title': 'اعلان سیستم',
+            'content': '',
+            'url': None,
+            'startTime': '08:00',
+            'endTime': '12:00',
+            'playSound': True,
+            'durationMs': 15000,
+        }
+    return config
+
+
+@router.post('/scheduled')
+async def save_scheduled_notification(
+    form_data: ScheduledNotificationConfig,
+    admin=Depends(get_admin_user),
+):
+    """
+    Save scheduled login notification config. Only accessible by administrators.
+    """
+    data = form_data.model_dump()
+    await Config.upsert({'notifications.scheduled_login': data})
+    return {'ok': True, 'config': data}
+
+
 @router.post('/broadcast')
 async def broadcast_admin_notification(
     form_data: BroadcastNotificationForm,

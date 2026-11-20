@@ -83,6 +83,7 @@
 	import { initializeTether, renewTetherSession } from '$lib/utils/tether';
 
 	import NotificationToast from '$lib/components/NotificationToast.svelte';
+	import { getScheduledNotification } from '$lib/apis/notifications/broadcast';
 	import Spinner from '$lib/components/common/Spinner.svelte';
 	import MfaManagement from '$lib/components/auth/MfaManagement.svelte';
 	import { getOutputText } from '$lib/components/chat/Messages/structuredOutput';
@@ -1021,6 +1022,65 @@
 		}
 	};
 
+	const checkScheduledLoginToast = async () => {
+		if (!localStorage.token) return;
+		try {
+			const config = await getScheduledNotification(localStorage.token);
+			if (!config || !config.enabled || !config.content?.trim()) return;
+
+			// Check user local time against [startTime, endTime]
+			const now = new Date();
+			const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+			const parseMinutes = (timeStr) => {
+				if (!timeStr) return 0;
+				const [h, m] = timeStr.split(':').map(Number);
+				return (h || 0) * 60 + (m || 0);
+			};
+
+			const startMinutes = parseMinutes(config.startTime || '08:00');
+			const endMinutes = parseMinutes(config.endTime || '12:00');
+
+			let inWindow = false;
+			if (startMinutes <= endMinutes) {
+				inWindow = currentMinutes >= startMinutes && currentMinutes <= endMinutes;
+			} else {
+				// Window wraps past midnight (e.g. 22:00 to 04:00)
+				inWindow = currentMinutes >= startMinutes || currentMinutes <= endMinutes;
+			}
+
+			if (!inWindow) return;
+
+			// Prevent duplicate popups on every reload using localStorage key with date
+			const todayKey = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+			const lastShownKey = `scheduled_toast_${todayKey}_${config.title || 'default'}`;
+			if (localStorage.getItem(lastShownKey)) return;
+
+			localStorage.setItem(lastShownKey, 'true');
+
+			toast.custom(NotificationToast, {
+				componentProps: {
+					onClick: () => {
+						if (config.url) {
+							if (config.url.startsWith('http://') || config.url.startsWith('https://')) {
+								window.open(config.url, '_blank');
+							} else {
+								goto(config.url);
+							}
+						}
+					},
+					title: config.title || $i18n.t('Notification'),
+					content: config.content,
+					playSound: config.playSound ?? true
+				},
+				duration: config.durationMs || 15000,
+				unstyled: true
+			});
+		} catch (err) {
+			console.error('Failed to evaluate scheduled login toast:', err);
+		}
+	};
+
 	const TOKEN_EXPIRY_BUFFER = 60; // seconds
 	const resolveFetchUrl = (input) => {
 		if (input instanceof Request) {
@@ -1429,6 +1489,9 @@
 								})
 								.catch(() => {});
 						}
+
+						// Evaluate and display scheduled login toast if within active hours
+						checkScheduledLoginToast().catch((err) => console.error(err));
 					} else {
 						localStorage.removeItem('token');
 						await user.set(null);
