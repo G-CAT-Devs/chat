@@ -1,6 +1,8 @@
 <script lang="ts">
-	import { getContext, tick, type Snippet } from 'svelte';
+	import { getContext, tick, onMount, type Snippet } from 'svelte';
 	import { toast } from 'svelte-sonner';
+	import { getPaymentsStatus, type PaymentsStatus } from '$lib/apis/subscriptions';
+	import { goto } from '$app/navigation';
 
 	import {
 		WEBUI_NAME,
@@ -72,6 +74,19 @@
 	export let moveChatHandler: (id: string, folderId: string) => void;
 
 	let closedBannerIds = [];
+	let subscriptionStatus: PaymentsStatus['subscription'] | null = null;
+	let expiryBannerDismissed = false;
+
+	onMount(async () => {
+		try {
+			const res = await getPaymentsStatus();
+			if (res?.subscription) {
+				subscriptionStatus = res.subscription;
+			}
+		} catch (err) {
+			// Ignore if not logged in or endpoint down
+		}
+	});
 
 	const getDismissedBannerIds = (): string[] => {
 		try {
@@ -424,11 +439,57 @@
 	{/if}
 
 	<div class="absolute top-full left-0 right-0 h-fit">
-		{#if !history.currentId && !$chatId && ($banners.length > 0 || ($config?.license_metadata?.type ?? null) === 'trial' || (($config?.license_metadata?.seats ?? null) !== null && $config?.user_count > $config?.license_metadata?.seats))}
+		{#if (!history.currentId && !$chatId && ($banners.length > 0 || ($config?.license_metadata?.type ?? null) === 'trial' || (($config?.license_metadata?.seats ?? null) !== null && $config?.user_count > $config?.license_metadata?.seats))) || (subscriptionStatus && subscriptionStatus.daysRemaining <= 7 && !expiryBannerDismissed)}
 			<div class=" w-full z-30">
 				<div
 					class=" flex flex-col gap-1 w-full max-h-28 overflow-y-auto overscroll-contain md:max-h-none md:overflow-visible"
 				>
+					{#if subscriptionStatus && subscriptionStatus.daysRemaining <= 7 && !expiryBannerDismissed}
+						<div
+							class="mx-2 px-3 py-2 rounded-lg flex items-center justify-between gap-2 text-xs backdrop-blur-xl border {subscriptionStatus.daysRemaining <=
+							0
+								? 'bg-red-500/15 border-red-500/30 text-red-900 dark:text-red-200'
+								: 'bg-amber-500/15 border-amber-500/30 text-amber-900 dark:text-amber-200'}"
+						>
+							<div class="flex items-center gap-2">
+								<span class="font-medium">
+									{#if subscriptionStatus.daysRemaining <= 0}
+										{$i18n.t('Your subscription has expired. Renew now to restore access.')}
+									{:else}
+										{$i18n.t(
+											'Your subscription expires in {{days}} days. Renew now to avoid interruption.',
+											{
+												days: subscriptionStatus.daysRemaining
+											}
+										)}
+									{/if}
+								</span>
+							</div>
+							<div class="flex items-center gap-2">
+								<button
+									type="button"
+									class="px-2.5 py-1 rounded font-medium text-white transition {subscriptionStatus.daysRemaining <=
+									0
+										? 'bg-red-600 hover:bg-red-700'
+										: 'bg-amber-500 hover:bg-amber-600'}"
+									on:click={() => goto('/subscription')}
+								>
+									{$i18n.t('Renew')}
+								</button>
+								<button
+									type="button"
+									class="hover:opacity-75 {subscriptionStatus.daysRemaining <= 0
+										? 'text-red-700 dark:text-red-300'
+										: 'text-amber-700 dark:text-amber-300'}"
+									on:click={() => (expiryBannerDismissed = true)}
+									aria-label={$i18n.t('Dismiss')}
+								>
+									✕
+								</button>
+							</div>
+						</div>
+					{/if}
+
 					{#if ($config?.license_metadata?.type ?? null) === 'trial'}
 						<Banner
 							className="px-[11px] rounded-lg"
