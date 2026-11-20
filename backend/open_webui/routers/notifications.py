@@ -16,7 +16,7 @@ from pydantic import BaseModel
 from open_webui.constants import ERROR_MESSAGES
 from open_webui.models.config import Config
 from open_webui.utils.access_control import has_permission
-from open_webui.utils.auth import get_verified_user
+from open_webui.utils.auth import get_verified_user, get_admin_user
 from open_webui.utils.notifications import (
     create_target,
     delete_target,
@@ -213,14 +213,47 @@ async def set_default_notification_target(target_id: str, user=Depends(get_verif
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@router.post('/targets/{target_id}/test')
-async def test_notification_target(request: Request, target_id: str, user=Depends(get_verified_user)):
-    await _check_notifications_access(user)
+class BroadcastNotificationForm(BaseModel):
+    title: str = 'اعلان سیستم'
+    content: str
+    url: str | None = None
+    playSound: bool = True
+    durationMs: int = 15000
+    userId: str | None = None
+
+
+@router.post('/broadcast')
+async def broadcast_admin_notification(
+    form_data: BroadcastNotificationForm,
+    admin=Depends(get_admin_user),
+):
+    """
+    Broadcast a native toast notification to active users via existing websocket connection.
+    Only accessible by administrators.
+    """
+    from open_webui.socket.main import sio
+
+    payload = {
+        'type': 'admin:notification',
+        'data': {
+            'title': form_data.title,
+            'content': form_data.content,
+            'url': form_data.url,
+            'playSound': form_data.playSound,
+            'duration': form_data.durationMs,
+        },
+    }
+
     try:
-        # LICENSE covers this Open WebUI notification identifier.
-        # Do not alter, remove, obscure, or replace it except as LICENSE permits:
-        # https://docs.openwebui.com/license.
-        app_name = getattr(request.app.state, 'WEBUI_NAME', 'GCAT')
-        return await test_target(user.id, target_id, app_name)
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        if form_data.userId:
+            await sio.emit('events:notification', payload, room=f'user:{form_data.userId}')
+        else:
+            await sio.emit('events:notification', payload)
+        return {'ok': True, 'broadcast': form_data.userId is None}
+    except Exception as e:
+        log.exception('Failed to broadcast admin notification: %s', e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f'Failed to broadcast notification: {e}',
+        )
+

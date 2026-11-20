@@ -986,6 +986,41 @@
 		}
 	};
 
+	const adminNotificationHandler = async (event) => {
+		if (event?.type === 'admin:notification' && event.data) {
+			const data = event.data;
+			toast.custom(NotificationToast, {
+				componentProps: {
+					onClick: () => {
+						if (data.url) {
+							if (data.url.startsWith('http://') || data.url.startsWith('https://')) {
+								window.open(data.url, '_blank');
+							} else {
+								goto(data.url);
+							}
+						}
+					},
+					title: data.title || $i18n.t('Notification'),
+					content: data.content,
+					playSound: data.playSound ?? true
+				},
+				duration: data.duration || 15000,
+				unstyled: true
+			});
+
+			if ($isLastActiveTab && ($settings?.notificationEnabled ?? false)) {
+				notify(
+					`${data.title || 'GCAT'}`,
+					{
+						body: data.content,
+						icon: `${WEBUI_BASE_URL}/static/gcat.png`
+					},
+					data.url || '/'
+				);
+			}
+		}
+	};
+
 	const TOKEN_EXPIRY_BUFFER = 60; // seconds
 	const resolveFetchUrl = (input) => {
 		if (input instanceof Request) {
@@ -1299,9 +1334,11 @@
 			if (value) {
 				$socket?.off('events', chatEventHandler);
 				$socket?.off('events:channel', channelEventHandler);
+				$socket?.off('events:notification', adminNotificationHandler);
 
 				$socket?.on('events', chatEventHandler);
 				$socket?.on('events:channel', channelEventHandler);
+				$socket?.on('events:notification', adminNotificationHandler);
 
 				// Set up the token expiry check
 				if (tokenTimer) {
@@ -1311,6 +1348,7 @@
 			} else {
 				$socket?.off('events', chatEventHandler);
 				$socket?.off('events:channel', channelEventHandler);
+				$socket?.off('events:notification', adminNotificationHandler);
 			}
 		});
 
