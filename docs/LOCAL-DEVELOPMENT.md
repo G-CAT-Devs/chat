@@ -78,7 +78,7 @@ Record the actual versions and results in the PR; do not claim a check passed if
 For this static-adapter build, preview is not a substitute for a live backend. Include any environment-specific failure, such as unavailable network downloads, unsupported runtime versions, or missing native dependencies, rather than presenting it as a passing baseline.
 
 ### Baseline Performance Metrics
+
 - **Build Time:** ~128 seconds
 - **Chunk Size Warnings:** Several chunks > 500 kB (e.g., `Chat.js`, `Messages.js`)
 - **Action Item:** Future performance optimizations should target these large chunks using dynamic imports or `manualChunks`.
-

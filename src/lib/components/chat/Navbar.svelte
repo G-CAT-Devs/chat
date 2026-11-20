@@ -4,8 +4,6 @@
 	import { getPaymentsStatus, type PaymentsStatus } from '$lib/apis/subscriptions';
 	import { checkQuotaStatus, type QuotaStatus } from '$lib/utils/quota';
 	import { showSettings } from '$lib/stores';
-	import { goto } from '$app/navigation';
-
 
 	import {
 		WEBUI_NAME,
@@ -96,7 +94,6 @@
 			// Ignore if not logged in or endpoint down
 		}
 	});
-
 
 	const getDismissedBannerIds = (): string[] => {
 		try {
@@ -531,7 +528,6 @@
 							</div>
 						</div>
 					{/if}
-
 
 					{#if ($config?.license_metadata?.type ?? null) === 'trial'}
 						<Banner

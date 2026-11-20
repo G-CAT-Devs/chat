@@ -964,9 +964,10 @@ if LICENSE_PUBLIC_KEY:
 WEBUI_NAME = 'GCAT'
 
 # GCAT Custom Entitlement / Plan Settings
-GCAT_PANEL_INTERNAL_URL = os.environ.get("GCAT_PANEL_INTERNAL_URL", "https://ai.gcat.ir")
-GCAT_INTERNAL_API_SECRET = os.environ.get("GCAT_INTERNAL_API_SECRET", "")
-GCAT_PLAN_ENABLED = os.environ.get("GCAT_PLAN_ENABLED", "true").lower() == "true"
+GCAT_PANEL_INTERNAL_URL = os.environ.get('GCAT_PANEL_INTERNAL_URL', 'https://ai.gcat.ir')
+GCAT_INTERNAL_API_SECRET = os.environ.get('GCAT_INTERNAL_API_SECRET', '')
+GCAT_PLAN_ENABLED = os.environ.get('GCAT_PLAN_ENABLED', 'true').lower() == 'true'
+
 
 # LICENSE covers this Open WebUI branding surface, including this favicon
 # and any visual, textual, or symbolic identifiers it preserves.
