@@ -74,6 +74,8 @@ export const CONTROL_LABELS = {
 	'models.set_default': 'Set as default',
 	'models.pin': 'Keep in Sidebar',
 	'settings.usage': 'settings.personal.usage.title',
+	'settings.plan': 'settings.personal.plan.title',
+
 	'settings.speech_to_text_engine': 'settings.personal.audio.speechToTextEngine.label',
 	'settings.text_to_speech_engine': 'settings.personal.audio.textToSpeechEngine.label',
 	'settings.user_location': 'settings.personal.interface.allowUserLocation.label',
