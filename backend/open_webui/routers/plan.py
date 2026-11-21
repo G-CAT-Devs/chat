@@ -122,4 +122,3 @@ async def delete_admin_subscription_plan(plan_id: str, admin=Depends(get_verifie
         return res.json()
     except Exception as e:
         return {'error': str(e)}
-
