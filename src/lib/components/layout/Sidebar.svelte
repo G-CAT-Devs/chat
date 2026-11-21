@@ -115,6 +115,7 @@
 	import ConfirmDialog from '../common/ConfirmDialog.svelte';
 	import MoreHorizontalIcon from './Sidebar/icons/MoreHorizontal.svelte';
 	import MobileSwipePanel from '../common/MobileSwipePanel.svelte';
+	import SidebarPlanCard from './Sidebar/SidebarPlanCard.svelte';
 
 	const DEFAULT_PINNED_ITEMS = ['notes', 'workspace'];
 
@@ -1966,6 +1967,7 @@
 						class=" sidebar-bg-gradient-to-t bg-linear-to-t from-gray-50 dark:from-gray-950 to-transparent from-50% pointer-events-none absolute inset-0 -z-10 -mt-6"
 					></div>
 					<div class="flex flex-col">
+						<SidebarPlanCard />
 						{#if $user !== undefined && $user !== null}
 							<UserMenu
 								role={$user?.role}

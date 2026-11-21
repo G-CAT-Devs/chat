@@ -23,6 +23,7 @@ export const WEBUI_DEPLOYMENT_ID = writable(null);
 
 export const config: Writable<Config | undefined> = writable(undefined);
 export const user: Writable<SessionUser | undefined> = writable(undefined);
+export const userPlan: Writable<any> = writable(null);
 
 // Electron App
 export const isApp = writable(false);
