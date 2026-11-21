@@ -60,9 +60,7 @@ export const saveScheduledNotification = async (
 	});
 
 	if (!res.ok) {
-		const err = await res
-			.json()
-			.catch(() => ({ detail: 'Failed to save scheduled notification' }));
+		const err = await res.json().catch(() => ({ detail: 'Failed to save scheduled notification' }));
 		throw new Error(err.detail || 'Failed to save scheduled notification');
 	}
 

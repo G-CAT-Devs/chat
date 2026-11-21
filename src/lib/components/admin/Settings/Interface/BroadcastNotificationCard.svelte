@@ -200,17 +200,29 @@
 	{:else}
 		<!-- Scheduled Login Toast View -->
 		<div class="space-y-3 text-xs pt-1">
-			<div class="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-gray-850 border border-gray-200 dark:border-gray-800">
+			<div
+				class="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-gray-850 border border-gray-200 dark:border-gray-800"
+			>
 				<div>
-					<div class="font-medium text-gray-800 dark:text-gray-200">{$i18n.t('Enable Scheduled Login Toast')}</div>
-					<div class="text-[0.6875rem] text-gray-400">{$i18n.t('Show automatically when users open chat during specified hours.')}</div>
+					<div class="font-medium text-gray-800 dark:text-gray-200">
+						{$i18n.t('Enable Scheduled Login Toast')}
+					</div>
+					<div class="text-[0.6875rem] text-gray-400">
+						{$i18n.t('Show automatically when users open chat during specified hours.')}
+					</div>
 				</div>
-				<input type="checkbox" bind:checked={scheduledEnabled} class="size-4 rounded accent-primary cursor-pointer" />
+				<input
+					type="checkbox"
+					bind:checked={scheduledEnabled}
+					class="size-4 rounded accent-primary cursor-pointer"
+				/>
 			</div>
 
 			<div class="grid grid-cols-2 gap-3">
 				<div>
-					<label for="sched-start" class="block mb-1 text-gray-500 dark:text-gray-400">{$i18n.t('Start Time')}</label>
+					<label for="sched-start" class="block mb-1 text-gray-500 dark:text-gray-400"
+						>{$i18n.t('Start Time')}</label
+					>
 					<input
 						id="sched-start"
 						type="time"
@@ -219,7 +231,9 @@
 					/>
 				</div>
 				<div>
-					<label for="sched-end" class="block mb-1 text-gray-500 dark:text-gray-400">{$i18n.t('End Time')}</label>
+					<label for="sched-end" class="block mb-1 text-gray-500 dark:text-gray-400"
+						>{$i18n.t('End Time')}</label
+					>
 					<input
 						id="sched-end"
 						type="time"
@@ -230,7 +244,9 @@
 			</div>
 
 			<div>
-				<label for="sched-title" class="block mb-1 text-gray-500 dark:text-gray-400">{$i18n.t('Title')}</label>
+				<label for="sched-title" class="block mb-1 text-gray-500 dark:text-gray-400"
+					>{$i18n.t('Title')}</label
+				>
 				<input
 					id="sched-title"
 					type="text"
@@ -241,7 +257,9 @@
 			</div>
 
 			<div>
-				<label for="sched-content" class="block mb-1 text-gray-500 dark:text-gray-400">{$i18n.t('Message')}</label>
+				<label for="sched-content" class="block mb-1 text-gray-500 dark:text-gray-400"
+					>{$i18n.t('Message')}</label
+				>
 				<textarea
 					id="sched-content"
 					bind:value={scheduledContent}
@@ -252,7 +270,9 @@
 			</div>
 
 			<div>
-				<label for="sched-url" class="block mb-1 text-gray-500 dark:text-gray-400">{$i18n.t('Action URL (Optional)')}</label>
+				<label for="sched-url" class="block mb-1 text-gray-500 dark:text-gray-400"
+					>{$i18n.t('Action URL (Optional)')}</label
+				>
 				<input
 					id="sched-url"
 					type="text"
@@ -285,4 +305,3 @@
 		</div>
 	{/if}
 </div>
-

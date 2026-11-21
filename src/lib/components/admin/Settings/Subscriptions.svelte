@@ -63,7 +63,7 @@
 		isNewPlan = false;
 		editingPlan = {
 			...p,
-			features: Array.isArray(p.features) ? p.features.join('\n') : (p.features || '')
+			features: Array.isArray(p.features) ? p.features.join('\n') : p.features || ''
 		};
 	};
 
@@ -89,9 +89,13 @@
 		if (!editingPlan) return;
 		saving = true;
 		try {
-			const featuresArray = typeof editingPlan.features === 'string'
-				? editingPlan.features.split('\n').map(s => s.trim()).filter(Boolean)
-				: editingPlan.features;
+			const featuresArray =
+				typeof editingPlan.features === 'string'
+					? editingPlan.features
+							.split('\n')
+							.map((s) => s.trim())
+							.filter(Boolean)
+					: editingPlan.features;
 
 			const payload = {
 				...editingPlan,
@@ -152,7 +156,9 @@
 		{:else if editingPlan}
 			<!-- Plan Edit Form -->
 			<AdminSettingSection title={isNewPlan ? $i18n.t('Create New Plan') : $i18n.t('Edit Plan')}>
-				<div class="space-y-4 p-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/40">
+				<div
+					class="space-y-4 p-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/40"
+				>
 					<div class="grid grid-cols-2 gap-4">
 						<AdminSettingField label={$i18n.t('Plan Identifier (ID)')}>
 							<input
@@ -228,7 +234,9 @@
 					</AdminSettingField>
 
 					<div class="flex items-center justify-between pt-2">
-						<label class="flex items-center gap-2 cursor-pointer text-xs text-gray-700 dark:text-gray-300">
+						<label
+							class="flex items-center gap-2 cursor-pointer text-xs text-gray-700 dark:text-gray-300"
+						>
 							<input type="checkbox" bind:checked={editingPlan.is_active} class="rounded" />
 							<span>{$i18n.t('Plan is Active')}</span>
 						</label>
@@ -261,7 +269,9 @@
 			<AdminSettingSection title={$i18n.t('Subscription Plans')}>
 				<div class="flex justify-between items-center mb-3">
 					<p class="text-xs text-gray-500">
-						{$i18n.t('Manage subscription tiers, prices, and rate limits. All updates sync instantly to checkout.')}
+						{$i18n.t(
+							'Manage subscription tiers, prices, and rate limits. All updates sync instantly to checkout.'
+						)}
 					</p>
 					<button
 						type="button"
@@ -279,21 +289,31 @@
 						>
 							<div class="space-y-1">
 								<div class="flex items-center gap-2">
-									<span class="font-semibold text-sm text-gray-900 dark:text-gray-100">{plan.name}</span>
-									<span class="px-2 py-0.5 rounded-full text-[0.625rem] font-medium bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+									<span class="font-semibold text-sm text-gray-900 dark:text-gray-100"
+										>{plan.name}</span
+									>
+									<span
+										class="px-2 py-0.5 rounded-full text-[0.625rem] font-medium bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20"
+									>
 										{plan.tier_name || 'Tier'}
 									</span>
 									{#if plan.badge}
-										<span class="px-2 py-0.5 rounded-full text-[0.625rem] font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+										<span
+											class="px-2 py-0.5 rounded-full text-[0.625rem] font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+										>
 											{plan.badge}
 										</span>
 									{/if}
 								</div>
 								<div class="text-xs text-gray-500 dark:text-gray-400">
-									{plan.duration_days} روز · {plan.price_tomans > 0 ? `${formatNumber(plan.price_tomans)} تومان` : 'رایگان'}
+									{plan.duration_days} روز · {plan.price_tomans > 0
+										? `${formatNumber(plan.price_tomans)} تومان`
+										: 'رایگان'}
 								</div>
 								{#if plan.description}
-									<p class="text-xs text-gray-400 dark:text-gray-500 line-clamp-1">{plan.description}</p>
+									<p class="text-xs text-gray-400 dark:text-gray-500 line-clamp-1">
+										{plan.description}
+									</p>
 								{/if}
 							</div>
 

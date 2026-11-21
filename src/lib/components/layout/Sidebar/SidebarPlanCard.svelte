@@ -58,11 +58,31 @@
 	$: weeklyPct = $userPlan?.usage?.weekly_percent ?? calculatePct(weeklyUsed, weeklyLimit);
 
 	const tierBadges: Record<string, { bg: string; text: string; label: string }> = {
-		Free: { bg: 'bg-gray-500/10 dark:bg-gray-400/10 border-gray-500/20', text: 'text-gray-600 dark:text-gray-300', label: 'Free' },
-		Plus: { bg: 'bg-blue-500/15 border-blue-500/30', text: 'text-blue-600 dark:text-blue-400', label: 'Plus' },
-		Pro: { bg: 'bg-emerald-500/15 border-emerald-500/30', text: 'text-emerald-600 dark:text-emerald-400', label: 'Pro' },
-		Max: { bg: 'bg-purple-500/15 border-purple-500/30', text: 'text-purple-600 dark:text-purple-400', label: 'Max' },
-		Researchers: { bg: 'bg-amber-500/15 border-amber-500/30', text: 'text-amber-600 dark:text-amber-400', label: 'Research' }
+		Free: {
+			bg: 'bg-gray-500/10 dark:bg-gray-400/10 border-gray-500/20',
+			text: 'text-gray-600 dark:text-gray-300',
+			label: 'Free'
+		},
+		Plus: {
+			bg: 'bg-blue-500/15 border-blue-500/30',
+			text: 'text-blue-600 dark:text-blue-400',
+			label: 'Plus'
+		},
+		Pro: {
+			bg: 'bg-emerald-500/15 border-emerald-500/30',
+			text: 'text-emerald-600 dark:text-emerald-400',
+			label: 'Pro'
+		},
+		Max: {
+			bg: 'bg-purple-500/15 border-purple-500/30',
+			text: 'text-purple-600 dark:text-purple-400',
+			label: 'Max'
+		},
+		Researchers: {
+			bg: 'bg-amber-500/15 border-amber-500/30',
+			text: 'text-amber-600 dark:text-amber-400',
+			label: 'Research'
+		}
 	};
 </script>
 
@@ -79,7 +99,9 @@
 			</div>
 
 			<span
-				class="px-2 py-0.5 rounded-full text-[0.625rem] font-medium border {(tierBadges[tier] || tierBadges.Free).bg} {(tierBadges[tier] || tierBadges.Free).text}"
+				class="px-2 py-0.5 rounded-full text-[0.625rem] font-medium border {(
+					tierBadges[tier] || tierBadges.Free
+				).bg} {(tierBadges[tier] || tierBadges.Free).text}"
 			>
 				{(tierBadges[tier] || tierBadges.Free).label}
 			</span>
