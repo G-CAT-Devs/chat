@@ -1,4 +1,4 @@
-import { GCAT_PAYMENTS_CATALOG_URL, GCAT_PAYMENTS_STATUS_URL } from '$lib/constants';
+import { GCAT_PAYMENTS_CATALOG_URL, GCAT_PAYMENTS_STATUS_URL, WEBUI_API_BASE_URL } from '$lib/constants';
 
 export type SubscriptionPlan = {
 	id: string;
@@ -108,8 +108,29 @@ export const getPaymentsStatus = async (orderId?: string | null): Promise<Paymen
 	return res.json();
 };
 
-/** Owner-scoped payment history from panel. */
+/** Owner-scoped payment history with dual fallback (direct internal plan router or panel auth cookie). */
 export const getPaymentHistory = async (): Promise<PaymentHistoryResponse> => {
+	// First attempt: Call internal backend proxy which authenticates with user token
+	if (typeof localStorage !== 'undefined' && localStorage.token) {
+		try {
+			const backendRes = await fetch(`${WEBUI_API_BASE_URL}/plan/history`, {
+				method: 'GET',
+				headers: {
+					Accept: 'application/json',
+					Authorization: `Bearer ${localStorage.token}`
+				}
+			});
+			if (backendRes.ok) {
+				const data = await backendRes.json();
+				if (Array.isArray(data.items)) {
+					return data;
+				}
+			}
+		} catch {
+			/* fallback to direct panel call */
+		}
+	}
+
 	const url = new URL('/api/payments/history', GCAT_PAYMENTS_STATUS_URL);
 	const res = await fetch(url.toString(), {
 		method: 'GET',

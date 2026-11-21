@@ -47,6 +47,7 @@
 	import UsageIcon from '../icons/UsageIcon.svelte';
 	import AdminTabIcon from '$lib/components/admin/Settings/AdminTabIcon.svelte';
 	import AdminGeneral from '$lib/components/admin/Settings/General.svelte';
+	import AdminSubscriptions from '$lib/components/admin/Settings/Subscriptions.svelte';
 	import AdminAuthentication from '$lib/components/admin/Settings/Authentication.svelte';
 	import AdminConnections from '$lib/components/admin/Settings/Connections.svelte';
 	import AdminModels from '$lib/components/admin/Settings/Models.svelte';
@@ -162,6 +163,7 @@
 	// $i18n.t('Experience');
 	$: adminSettingGroups = {
 		'admin:general': $i18n.t('System'),
+		'admin:subscriptions': $i18n.t('System'),
 		'admin:authentication': $i18n.t('System'),
 		'admin:interface': $i18n.t('System'),
 		'admin:connections': $i18n.t('AI'),
@@ -284,6 +286,12 @@
 			titleKey: 'settings.admin.general.title',
 			title: $i18n.t('settings.admin.general.title'),
 			searchPrefixes: ['settings.admin.general.', 'settings.personal.interface.']
+		},
+		{
+			id: 'admin:subscriptions',
+			titleKey: 'settings.admin.subscriptions.title',
+			title: $i18n.t('Subscription Plans'),
+			searchPrefixes: ['settings.admin.subscriptions.']
 		},
 		{
 			id: 'admin:authentication',
@@ -941,6 +949,8 @@
 				<About />
 			{:else if selectedTab === 'admin:general'}
 				<AdminGeneral saveHandler={adminConfigSaveHandler} />
+			{:else if selectedTab === 'admin:subscriptions'}
+				<AdminSubscriptions />
 			{:else if selectedTab === 'admin:authentication'}
 				<AdminAuthentication />
 			{:else if selectedTab === 'admin:connections'}
