@@ -62,7 +62,12 @@ jobs:
           file: ./Dockerfile
           platforms: linux/amd64
           push: true
-          tags: ghcr.io/g-cat-devs/chat-gcat:main
+          # chat-gcat:main keeps the current digest-pinned deploy pipeline working.
+          # chat:<sha> is the target-architecture name used by infra's
+          # versions.yaml (see G-CAT-Devs/infra migration issue).
+          tags: |
+            ghcr.io/g-cat-devs/chat-gcat:main
+            ghcr.io/g-cat-devs/chat:${{ github.sha }}
           build-args: |
             BUILD_HASH=${{ github.sha }}
             BUILD_CHANNEL=main
